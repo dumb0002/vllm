@@ -203,6 +203,24 @@ class PrometheusStatLogger(StatLoggerBase):
                                                        engine_indexes,
                                                        model_name)
 
+        # Sleep State & Level
+        gauge_engine_sleep_state = self._gauge_cls(
+            name="vllm:engine_sleep_state",
+            documentation="Engine sleep state. 1 means engine sleeping and 0 means engine awake.",
+            labelnames=labelnames,
+            multiprocess_mode="mostrecent")
+        self.gauge_engine_sleep_state = make_per_engine(gauge_engine_sleep_state,
+                                                        engine_indexes,
+                                                        model_name)
+        
+        gauge_engine_sleep_level = self._gauge_cls(
+            name="vllm:engine_sleep_level",
+            documentation="Engine sleep level. Level 0 means engine is awake; Level 1 means model weights offload to CPU memory and discard the kv cache; level 2 means model weights and the kv cache are both discarded.",
+            labelnames=labelnames,
+            multiprocess_mode="mostrecent")
+        self.gauge_engine_sleep_level = make_per_engine(gauge_engine_sleep_level,
+                                                        engine_indexes,
+                                                        model_name)
         #
         # GPU cache
         #
@@ -493,6 +511,12 @@ class PrometheusStatLogger(StatLoggerBase):
                engine_idx: int = 0):
         """Log to prometheus."""
         if scheduler_stats is not None:
+            if scheduler_stats.engine_stats is not None:
+                self.gauge_engine_sleep_state[engine_idx].set(
+                scheduler_stats.engine_stats.sleep)
+                self.gauge_engine_sleep_level[engine_idx].set(
+                scheduler_stats.engine_stats.level)
+
             self.gauge_scheduler_running[engine_idx].set(
                 scheduler_stats.num_running_reqs)
             self.gauge_scheduler_waiting[engine_idx].set(
@@ -679,8 +703,7 @@ class StatLoggerManager:
         for logger in per_engine_loggers:
             logger.record(scheduler_stats, iteration_stats, engine_idx)
 
-        self.prometheus_logger.record(scheduler_stats, iteration_stats,
-                                      engine_idx)
+        self.prometheus_logger.record(scheduler_stats, iteration_stats, engine_idx)
 
     def log(self):
         for per_engine_loggers in self.per_engine_logger_dict.values():

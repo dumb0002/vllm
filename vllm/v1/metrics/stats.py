@@ -27,6 +27,15 @@ class PrefixCacheStats:
 
 
 @dataclass
+class EngineStateStats:
+    """Stats for the engine state (sleep or awake)."""
+    # Whether engine is sleeping or not
+    sleep: int = 0
+    # Sleep level.
+    level: int = 1
+
+
+@dataclass
 class SchedulerStats:
     """Stats associated with the scheduler."""
 
@@ -44,6 +53,9 @@ class SchedulerStats:
 
     spec_decoding_stats: Optional[SpecDecodingStats] = None
 
+    # Engine Stats
+    engine_stats: Optional[EngineStateStats] = None
+
     num_corrupted_reqs: int = 0
 
 
@@ -52,7 +64,7 @@ class LoRAStats:
     waiting_requests: set[str] = field(default_factory=set)
     running_requests: set[str] = field(default_factory=set)
 
-
+    
 @dataclass
 class RequestStateStats:
     """Stats that need to be tracked across delta updates."""

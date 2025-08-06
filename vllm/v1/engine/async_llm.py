@@ -42,7 +42,7 @@ from vllm.v1.engine.processor import Processor
 from vllm.v1.executor.abstract import Executor
 from vllm.v1.metrics.loggers import StatLoggerFactory, StatLoggerManager
 from vllm.v1.metrics.prometheus import shutdown_prometheus
-from vllm.v1.metrics.stats import IterationStats
+from vllm.v1.metrics.stats import IterationStats, SchedulerStats, EngineStateStats
 
 logger = init_logger(__name__)
 
@@ -98,6 +98,7 @@ class AsyncLLM(EngineClient):
         self.vllm_config = vllm_config
         self.log_requests = log_requests
         self.log_stats = log_stats
+        self.engine_stats = EngineStateStats()
 
         if self.model_config.skip_tokenizer_init:
             self.tokenizer = None
@@ -444,6 +445,7 @@ class AsyncLLM(EngineClient):
                     # TODO(rob): make into a coroutine and launch it in
                     # background thread once Prometheus overhead is non-trivial.
                     if logger_manager:
+                        logger.info("BRAULIO IS DEBUGGING METRICS COLLECTION ...")
                         logger_manager.record(
                             engine_idx=outputs.engine_index,
                             scheduler_stats=outputs.scheduler_stats,
@@ -610,8 +612,24 @@ class AsyncLLM(EngineClient):
         await self.reset_prefix_cache()
         await self.engine_core.sleep_async(level)
 
+        # Log sleep status
+        self.engine_stats.sleep = 1
+        self.engine_stats.level = level
+        self.logger_manager.record(
+            scheduler_stats=SchedulerStats(engine_stats=self.engine_stats),
+            iteration_stats=None,
+        )
+
     async def wake_up(self, tags: Optional[list[str]] = None) -> None:
         await self.engine_core.wake_up_async(tags)
+        
+        # logs awake status
+        self.engine_stats.sleep = 0
+        self.engine_stats.level = 0
+        self.logger_manager.record(
+            scheduler_stats=SchedulerStats(engine_stats=self.engine_stats),
+            iteration_stats=None,
+        )
 
     async def is_sleeping(self) -> bool:
         return await self.engine_core.is_sleeping_async()

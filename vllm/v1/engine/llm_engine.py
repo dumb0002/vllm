@@ -31,7 +31,7 @@ from vllm.v1.executor.abstract import Executor
 from vllm.v1.metrics.loggers import (PrometheusStatLogger, StatLoggerBase,
                                      StatLoggerFactory)
 from vllm.v1.metrics.reader import Metric, get_metrics_snapshot
-from vllm.v1.metrics.stats import IterationStats
+from vllm.v1.metrics.stats import IterationStats, EngineStateStats
 
 logger = init_logger(__name__)
 
@@ -67,6 +67,7 @@ class LLMEngine:
         self.vllm_config = vllm_config
         self.model_config = vllm_config.model_config
         self.cache_config = vllm_config.cache_config
+        self.engine_stats = EngineStateStats()
 
         self.log_stats = log_stats
         self.stat_logger: Optional[StatLoggerBase] = None
@@ -250,11 +251,24 @@ class LLMEngine:
         # 3) Abort any reqs that finished due to stop strings.
         self.engine_core.abort_requests(processed_outputs.reqs_to_abort)
 
+        ## My Debugging Code Start
+        myEngine_stats = EngineStateStats()
+        myEngine_stats.sleep = 1
+        myEngine_stats.level = 1
+
+        scheduler_stats = outputs.scheduler_stats
+        scheduler_stats.engine_stats = myEngine_stats
+        ## My Debugging Code End
+
         # 4) Record stats
+        logger.info("STARTING COLLECTING STATS ...")
         if self.stat_logger is not None:
             assert outputs.scheduler_stats is not None
-            self.stat_logger.record(scheduler_stats=outputs.scheduler_stats,
-                                    iteration_stats=iteration_stats)
+            self.stat_logger.record(scheduler_stats=scheduler_stats,
+                        iteration_stats=iteration_stats)
+            # self.stat_logger.record(scheduler_stats=outputs.scheduler_stats,
+            #                         iteration_stats=iteration_stats)
+        logger.info("FINISHED COLLECTING STATS ...")
 
         return processed_outputs.request_outputs
 
@@ -278,10 +292,23 @@ class LLMEngine:
         self.engine_core.reset_prefix_cache()
 
     def sleep(self, level: int = 1):
+        logger.info("Starting processing sleep request ...")
         self.engine_core.sleep(level)
+
+        logger.info("Starting LOGIN sleep request ...")
+        if self.stat_logger is not None:
+            self.engine_stats.sleep = 1
+            self.engine_stats.level = level
+            self.stat_logger.record(engine_stats=self.engine_stats)
+        logger.info("DONE LOGIN sleep request ...")
 
     def wake_up(self, tags: Optional[list[str]] = None):
         self.engine_core.wake_up(tags)
+
+        if self.stat_logger is not None:
+            self.engine_stats.sleep = 0
+            self.engine_stats.level = 1
+            self.stat_logger.record(engine_stats=self.self.engine_stats)
 
     def is_sleeping(self) -> bool:
         return self.engine_core.is_sleeping()

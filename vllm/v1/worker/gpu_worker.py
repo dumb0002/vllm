@@ -34,6 +34,13 @@ from vllm.v1.utils import report_usage_stats
 from vllm.v1.worker.gpu_model_runner import GPUModelRunner
 from vllm.v1.worker.worker_base import WorkerBase
 
+from vllm.v1.metrics.loggers import (PrometheusStatLogger, StatLoggerBase,
+                                     StatLoggerFactory)
+from vllm.v1.metrics.stats import SchedulerStats, EngineStateStats
+
+from vllm.v1.metrics.loggers import StatLoggerManager
+
+
 logger = init_logger(__name__)
 
 if TYPE_CHECKING:
@@ -58,10 +65,17 @@ class Worker(WorkerBase):
                          distributed_init_method=distributed_init_method,
                          is_driver_worker=is_driver_worker)
 
+        
         if self.model_config.trust_remote_code:
             # note: lazy import to avoid importing torch before initializing
             from vllm.utils import init_cached_hf_modules
             init_cached_hf_modules()
+
+     
+        self.logger_manager = StatLoggerManager(
+                vllm_config=self.vllm_config,
+                custom_stat_loggers=None,
+            )
 
         # Buffers saved before sleep
         self._sleep_saved_buffers: dict[str, torch.Tensor] = {}
@@ -117,6 +131,7 @@ class Worker(WorkerBase):
             "Sleep mode freed %.2f GiB memory, "
             "%.2f GiB memory is still in use.", freed_bytes / GiB_bytes,
             used_bytes / GiB_bytes)
+        
 
     def wake_up(self, tags: Optional[list[str]] = None) -> None:
         from vllm.device_allocator.cumem import CuMemAllocator
