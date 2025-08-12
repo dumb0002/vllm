@@ -53,6 +53,7 @@ class ExecutorBase(ABC):
         self.observability_config = vllm_config.observability_config
         self._init_executor()
         self.is_sleeping = False
+        self.sleep_level= 1
         self.sleeping_tags: set[str] = set()
 
     @abstractmethod
@@ -185,6 +186,7 @@ class ExecutorBase(ABC):
         time_after_sleep = time.perf_counter()
         self.sleeping_tags = {"weights", "kv_cache"}
         self.is_sleeping = True
+        self.sleep_level = level
         logger.info("It took %.6f seconds to fall asleep.",
                     time_after_sleep - time_before_sleep)
 

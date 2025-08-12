@@ -32,8 +32,9 @@ class Stats:
     num_waiting_sys: int
     num_swapped_sys: int
 
-    #   Sleep State
+    #   Sleep State & Level
     sleep_state_sys: int
+    sleep_level_sys: int
 
     #   KV Cache Usage in %
     gpu_cache_usage_sys: float

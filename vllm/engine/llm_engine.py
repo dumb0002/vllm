@@ -1563,12 +1563,13 @@ class LLMEngine:
         num_waiting_sys = sum(
             len(scheduler.waiting) for scheduler in self.scheduler)
 
-        #   Sleep State
+        #   Sleep State & Level
         state = self.is_sleeping()
         if state:
             sleep_state_sys = 1
         else:
             sleep_state_sys = 0
+        sleep_level_sys = self.model_executor.sleep_level
 
         # KV Cache Usage in %
         num_total_gpu = self.cache_config.num_gpu_blocks

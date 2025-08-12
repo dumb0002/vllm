@@ -77,10 +77,16 @@ class Metrics:
             multiprocess_mode="livemostrecent",
         )
 
-        # Sleep State
+        # Sleep State & Level
         self.gauge_engine_sleep_state = self._gauge_cls(
             name="vllm:engine_sleep_state",
             documentation="Engine sleep state. 0 means engine sleeping and 1 means engine awake.",
+            labelnames=labelnames,
+            multiprocess_mode="livemostrecent")
+        
+        self.gauge_engine_sleep_level = self._gauge_cls(
+            name="vllm:engine_sleep_level",
+            documentation="Engine sleep level. Level 1 means model weights offload to CPU memory and discard the kv cache; level 2 means model weights and the kv cache are both discarded,
             labelnames=labelnames,
             multiprocess_mode="livemostrecent")
 
@@ -477,6 +483,8 @@ class PrometheusStatLogger(StatLoggerBase):
                         stats.gpu_cache_usage_sys)
         self._log_gauge(self.gauge_engine_sleep_state,
                         stats.sleep_state_sys)
+        self._log_gauge(self.gauge_engine_sleep_level,
+                        stats.sleep_level_sys)
         # Including max-lora in metric, in future this property of lora
         # config maybe extended to be dynamic.
         lora_info = {
