@@ -86,7 +86,7 @@ class Metrics:
         
         self.gauge_engine_sleep_level = self._gauge_cls(
             name="vllm:engine_sleep_level",
-            documentation="Engine sleep level. Level 1 means model weights offload to CPU memory and discard the kv cache; level 2 means model weights and the kv cache are both discarded,
+            documentation="Engine sleep level. Level 1 means model weights offload to CPU memory and discard the kv cache; level 2 means model weights and the kv cache are both discarded.",
             labelnames=labelnames,
             multiprocess_mode="livemostrecent")
 

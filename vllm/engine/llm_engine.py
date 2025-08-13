@@ -1772,6 +1772,7 @@ class LLMEngine:
             num_waiting_sys=num_waiting_sys,
             # Sleep State
             sleep_state_sys=sleep_state_sys,
+            sleep_level_sys=sleep_level_sys,
             #   KV Cache Usage in %
             gpu_cache_usage_sys=gpu_cache_usage_sys,
             cpu_cache_usage_sys=cpu_cache_usage_sys,

@@ -203,6 +203,24 @@ class PrometheusStatLogger(StatLoggerBase):
                                                        engine_indexes,
                                                        model_name)
 
+        # Sleep State & Level
+        gauge_engine_sleep_state = self._gauge_cls(
+            name="vllm:engine_sleep_state",
+            documentation="Engine sleep state. 0 means engine sleeping and 1 means engine awake.",
+            labelnames=labelnames,
+            multiprocess_mode="mostrecent")
+        self.gauge_engine_sleep_state = make_per_engine(gauge_engine_sleep_state,
+                                                        engine_indexes,
+                                                        model_name)
+        
+        gauge_engine_sleep_level = self._gauge_cls(
+            name="vllm:engine_sleep_level",
+            documentation="Engine sleep level. Level 1 means model weights offload to CPU memory and discard the kv cache; level 2 means model weights and the kv cache are both discarded.",
+            labelnames=labelnames,
+            multiprocess_mode="mostrecent")
+        self.gauge_engine_sleep_level = make_per_engine(gauge_engine_sleep_level,
+                                                        engine_indexes,
+                                                        model_name)
         #
         # GPU cache
         #
