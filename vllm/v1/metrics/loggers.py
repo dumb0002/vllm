@@ -13,7 +13,7 @@ from vllm.logger import init_logger
 from vllm.v1.core.kv_cache_utils import PrefixCachingMetrics
 from vllm.v1.engine import FinishReason
 from vllm.v1.metrics.prometheus import unregister_vllm_metrics
-from vllm.v1.metrics.stats import IterationStats, SchedulerStats
+from vllm.v1.metrics.stats import IterationStats, SchedulerStats, EngineStateStats
 from vllm.v1.spec_decode.metrics import SpecDecodingLogging, SpecDecodingProm
 
 logger = init_logger(__name__)
@@ -37,6 +37,7 @@ class StatLoggerBase(ABC):
     def record(self,
                scheduler_stats: Optional[SchedulerStats],
                iteration_stats: Optional[IterationStats],
+               engine_stats: Optional[EngineStateStats],
                engine_idx: int = 0):
         ...
 
@@ -84,6 +85,7 @@ class LoggingStatLogger(StatLoggerBase):
     def record(self,
                scheduler_stats: Optional[SchedulerStats],
                iteration_stats: Optional[IterationStats],
+               engine_stats: Optional[EngineStateStats],
                engine_idx: int = 0):
         """Log Stats to standard output."""
 
@@ -508,8 +510,15 @@ class PrometheusStatLogger(StatLoggerBase):
     def record(self,
                scheduler_stats: Optional[SchedulerStats],
                iteration_stats: Optional[IterationStats],
+               engine_stats: Optional[EngineStateStats],
                engine_idx: int = 0):
         """Log to prometheus."""
+        if engine_stats is not None:
+           self.gauge_engine_sleep_state[engine_idx].set(
+                engine_stats.sleep)
+           self.gauge_engine_sleep_level[engine_idx].set(
+                engine_stats.level)
+
         if scheduler_stats is not None:
             self.gauge_scheduler_running[engine_idx].set(
                 scheduler_stats.num_running_reqs)
@@ -688,6 +697,7 @@ class StatLoggerManager:
         self,
         scheduler_stats: Optional[SchedulerStats],
         iteration_stats: Optional[IterationStats],
+        engine_stats: Optional[EngineStateStats],
         engine_idx: Optional[int] = None,
     ):
         if engine_idx is None:
@@ -695,9 +705,9 @@ class StatLoggerManager:
 
         per_engine_loggers = self.per_engine_logger_dict[engine_idx]
         for logger in per_engine_loggers:
-            logger.record(scheduler_stats, iteration_stats, engine_idx)
+            logger.record(scheduler_stats, iteration_stats, engine_stats, engine_idx)
 
-        self.prometheus_logger.record(scheduler_stats, iteration_stats,
+        self.prometheus_logger.record(scheduler_stats, iteration_stats, engine_stats,
                                       engine_idx)
 
     def log(self):

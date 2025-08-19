@@ -52,7 +52,15 @@ class LoRAStats:
     waiting_requests: set[str] = field(default_factory=set)
     running_requests: set[str] = field(default_factory=set)
 
-
+@dataclass
+class EngineStateStats:
+    """Stats related to engine state (sleep or awake)."""
+    # Whether engine is sleeping or not
+    sleep: bool = False
+    # Sleep level.
+    level: int = 1
+   
+    
 @dataclass
 class RequestStateStats:
     """Stats that need to be tracked across delta updates."""

@@ -31,7 +31,7 @@ from vllm.v1.executor.abstract import Executor
 from vllm.v1.metrics.loggers import (PrometheusStatLogger, StatLoggerBase,
                                      StatLoggerFactory)
 from vllm.v1.metrics.reader import Metric, get_metrics_snapshot
-from vllm.v1.metrics.stats import IterationStats
+from vllm.v1.metrics.stats import IterationStats, EngineStateStats
 
 logger = init_logger(__name__)
 
@@ -67,6 +67,7 @@ class LLMEngine:
         self.vllm_config = vllm_config
         self.model_config = vllm_config.model_config
         self.cache_config = vllm_config.cache_config
+        self.engine_stats = EngineStateStats()
 
         self.log_stats = log_stats
         self.stat_logger: Optional[StatLoggerBase] = None
@@ -281,8 +282,18 @@ class LLMEngine:
     def sleep(self, level: int = 1):
         self.engine_core.sleep(level)
 
+        if self.stat_logger is not None:
+            self.engine_stats.sleep = True
+            self.engine_stats.level = level
+            self.stat_logger.record(engine_stats=self.engine_stats)
+
     def wake_up(self, tags: Optional[list[str]] = None):
         self.engine_core.wake_up(tags)
+
+        if self.stat_logger is not None:
+            self.engine_stats.sleep = False
+            self.engine_stats.level = 1
+            self.stat_logger.record(engine_stats=self.self.engine_stats)
 
     def is_sleeping(self) -> bool:
         return self.engine_core.is_sleeping()
