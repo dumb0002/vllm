@@ -280,12 +280,15 @@ class LLMEngine:
         self.engine_core.reset_prefix_cache()
 
     def sleep(self, level: int = 1):
+        logger.info("Starting processing sleep request ...")
         self.engine_core.sleep(level)
 
+        logger.info("Starting LOGIN sleep request ...")
         if self.stat_logger is not None:
             self.engine_stats.sleep = 1
             self.engine_stats.level = level
             self.stat_logger.record(engine_stats=self.engine_stats)
+        logger.info("DONE LOGIN sleep request ...")
 
     def wake_up(self, tags: Optional[list[str]] = None):
         self.engine_core.wake_up(tags)

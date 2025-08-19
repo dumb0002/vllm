@@ -707,8 +707,7 @@ class StatLoggerManager:
         for logger in per_engine_loggers:
             logger.record(scheduler_stats, iteration_stats, engine_stats, engine_idx)
 
-        self.prometheus_logger.record(scheduler_stats, iteration_stats, engine_stats,
-                                      engine_idx)
+        self.prometheus_logger.record(scheduler_stats, iteration_stats, engine_stats,engine_idx)
 
     def log(self):
         for per_engine_loggers in self.per_engine_logger_dict.values():
