@@ -56,7 +56,7 @@ class LoRAStats:
 class EngineStateStats:
     """Stats related to engine state (sleep or awake)."""
     # Whether engine is sleeping or not
-    sleep: bool = False
+    sleep: int = 0
     # Sleep level.
     level: int = 1
    

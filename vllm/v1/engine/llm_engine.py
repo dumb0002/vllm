@@ -283,7 +283,7 @@ class LLMEngine:
         self.engine_core.sleep(level)
 
         if self.stat_logger is not None:
-            self.engine_stats.sleep = True
+            self.engine_stats.sleep = 1
             self.engine_stats.level = level
             self.stat_logger.record(engine_stats=self.engine_stats)
 
@@ -291,7 +291,7 @@ class LLMEngine:
         self.engine_core.wake_up(tags)
 
         if self.stat_logger is not None:
-            self.engine_stats.sleep = False
+            self.engine_stats.sleep = 0
             self.engine_stats.level = 1
             self.stat_logger.record(engine_stats=self.self.engine_stats)
 
