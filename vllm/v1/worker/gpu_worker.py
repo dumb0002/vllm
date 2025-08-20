@@ -93,6 +93,7 @@ class Worker(WorkerBase):
             self.profiler = None
 
     def sleep(self, level: int = 1) -> None:
+        logger.info("Starting LOGIN sleep request ...")
         from vllm.device_allocator.cumem import CuMemAllocator
 
         free_bytes_before_sleep = torch.cuda.mem_get_info()[0]
@@ -115,6 +116,8 @@ class Worker(WorkerBase):
             "Sleep mode freed %.2f GiB memory, "
             "%.2f GiB memory is still in use.", freed_bytes / GiB_bytes,
             used_bytes / GiB_bytes)
+        
+        logger.info("DONE LOGIN sleep request ...")
 
     def wake_up(self, tags: Optional[list[str]] = None) -> None:
         from vllm.device_allocator.cumem import CuMemAllocator
