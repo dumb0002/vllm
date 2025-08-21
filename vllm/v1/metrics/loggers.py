@@ -515,7 +515,8 @@ class PrometheusStatLogger(StatLoggerBase):
         """Log to prometheus."""
         if engine_stats is not None:
            logger.info("RECORDING ENGINE STATS ...")
-           logger.info(engine_stats)
+           logger.info(engine_stats.sleep)
+           logger.info(engine_stats.level)
            logger.info("RECORDING ENGINE STATS ...")
            self.gauge_engine_sleep_state[engine_idx].set(
                 engine_stats.sleep)
