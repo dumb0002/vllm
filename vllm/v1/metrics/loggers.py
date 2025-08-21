@@ -518,11 +518,9 @@ class PrometheusStatLogger(StatLoggerBase):
            logger.info(engine_stats.sleep)
            logger.info(engine_stats.level)
            logger.info("RECORDING ENGINE STATS ...")
-           self.gauge_engine_sleep_state[engine_idx].set(
-                engine_stats.sleep)
-           self.gauge_engine_sleep_level[engine_idx].set(
-                engine_stats.level)
-           logger.info("BRAULIO IS DEBUGGING ...")
+           self.gauge_engine_sleep_state[engine_idx].set(1)
+           self.gauge_engine_sleep_level[engine_idx].set(1)
+           logger.info("BRAULIO IS DEBUGGING (2)...")
 
         if scheduler_stats is not None:
             self.gauge_scheduler_running[engine_idx].set(
