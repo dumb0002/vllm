@@ -77,18 +77,18 @@ class Metrics:
             multiprocess_mode="livemostrecent",
         )
 
-        # Sleep State & Level
-        self.gauge_engine_sleep_state = self._gauge_cls(
-            name="vllm:engine_sleep_state",
-            documentation="Engine sleep state. 0 means engine sleeping and 1 means engine awake.",
-            labelnames=labelnames,
-            multiprocess_mode="livemostrecent")
+        # # Sleep State & Level
+        # self.gauge_engine_sleep_state = self._gauge_cls(
+        #     name="vllm:engine_sleep_state",
+        #     documentation="Engine sleep state. 0 means engine sleeping and 1 means engine awake.",
+        #     labelnames=labelnames,
+        #     multiprocess_mode="livemostrecent")
         
-        self.gauge_engine_sleep_level = self._gauge_cls(
-            name="vllm:engine_sleep_level",
-            documentation="Engine sleep level. Level 1 means model weights offload to CPU memory and discard the kv cache; level 2 means model weights and the kv cache are both discarded.",
-            labelnames=labelnames,
-            multiprocess_mode="livemostrecent")
+        # self.gauge_engine_sleep_level = self._gauge_cls(
+        #     name="vllm:engine_sleep_level",
+        #     documentation="Engine sleep level. Level 1 means model weights offload to CPU memory and discard the kv cache; level 2 means model weights and the kv cache are both discarded.",
+        #     labelnames=labelnames,
+        #     multiprocess_mode="livemostrecent")
 
         #   KV Cache Usage in %
         self.gauge_gpu_cache_usage = self._gauge_cls(
