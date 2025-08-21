@@ -32,6 +32,11 @@ from vllm.v1.utils import report_usage_stats
 from vllm.v1.worker.gpu_model_runner import GPUModelRunner
 from vllm.v1.worker.worker_base import WorkerBase
 
+from vllm.v1.metrics.loggers import (PrometheusStatLogger, StatLoggerBase,
+                                     StatLoggerFactory)
+from vllm.v1.metrics.stats import IterationStats, EngineStateStats
+
+
 logger = init_logger(__name__)
 
 if TYPE_CHECKING:
@@ -60,6 +65,10 @@ class Worker(WorkerBase):
             # note: lazy import to avoid importing torch before initializing
             from vllm.utils import init_cached_hf_modules
             init_cached_hf_modules()
+
+        # My testing changes for sleep & wake_up
+        self.stat_logger = PrometheusStatLogger(vllm_config)
+        self.engine_stats = EngineStateStats()
 
         # Buffers saved before sleep
         self._sleep_saved_buffers: dict[str, torch.Tensor] = {}
@@ -117,6 +126,13 @@ class Worker(WorkerBase):
             "%.2f GiB memory is still in use.", freed_bytes / GiB_bytes,
             used_bytes / GiB_bytes)
         
+
+        logger.info("Starting LOGIN sleep request ...")
+        if self.stat_logger is not None:
+            self.engine_stats.sleep = 1
+            self.engine_stats.level = level
+            self.stat_logger.record(engine_stats=self.engine_stats)
+        logger.info("DONE LOGIN sleep request ...")
         logger.info("DONE LOGIN sleep request ...")
 
     def wake_up(self, tags: Optional[list[str]] = None) -> None:
