@@ -129,7 +129,7 @@ class Worker(WorkerBase):
 
         logger.info("Starting LOGIN sleep request ...")
         if self.stat_logger is not None:
-            self.engine_stats.sleep = 1
+            self.engine_stats.sleep = 1.0
             self.engine_stats.level = level
             self.stat_logger.record(scheduler_stats=None, iteration_stats=None, engine_stats=self.engine_stats)
         logger.info("DONE LOGIN sleep request ...")
