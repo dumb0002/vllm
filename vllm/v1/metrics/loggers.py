@@ -208,7 +208,7 @@ class PrometheusStatLogger(StatLoggerBase):
         # Sleep State & Level
         gauge_engine_sleep_state = self._gauge_cls(
             name="vllm:engine_sleep_state",
-            documentation="Engine sleep state. 0 means engine sleeping and 1 means engine awake.",
+            documentation="Engine sleep state. 1 means engine sleeping and 0 means engine awake.",
             labelnames=labelnames,
             multiprocess_mode="mostrecent")
         self.gauge_engine_sleep_state = make_per_engine(gauge_engine_sleep_state,
@@ -514,6 +514,7 @@ class PrometheusStatLogger(StatLoggerBase):
                engine_idx: int = 0):
         """Log to prometheus."""
         if engine_stats is not None:
+           logger.info("RECORDING ENGINE STATS ...")
            self.gauge_engine_sleep_state[engine_idx].set(
                 engine_stats.sleep)
            self.gauge_engine_sleep_level[engine_idx].set(
